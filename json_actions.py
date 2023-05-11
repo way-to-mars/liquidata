@@ -8,7 +8,7 @@ from requests.exceptions import HTTPError
 # возвращаем три значения {причина ликвидации}, {КОД ОКВЭД}, {расшифровка ОКВЭДа}
 # референс: https://habr.com/ru/post/650291/
 def parse_inn(inn):
-    #default values for expetions
+    # default values
     name_for_liquidation = "смотри выписку ЕГРЮЛ egrul.nalog.ru"
     code_for_okved = 0
     name_for_okved = "смотри выписку ЕГРЮЛ egrul.nalog.ru"
@@ -18,7 +18,6 @@ def parse_inn(inn):
         return name_for_liquidation, code_for_okved, name_for_okved
 
     url_string = "https://egrul.itsoft.ru/{0}.json".format(inn)
-    # print(f'     Trying to access {url_string}... ', end=' ')
     try:
         response = requests.get(url_string)
         # если ответ успешен, исключения задействованы не будут
@@ -29,26 +28,28 @@ def parse_inn(inn):
     except Exception as err:
         print(f'Other error occurred: {err}')  # Python 3.6
         return name_for_liquidation, code_for_okved, name_for_okved
-    else:
-        # print('Success!')
+
+    try:
+        json_data = json.loads(response.text)
+        if json_data is not False:
+            if "СвЮЛ" in json_data:
+                json_sv_ul = json_data["СвЮЛ"]
+                if "СвПрекрЮЛ" in json_sv_ul:
+                    if "СпПрекрЮЛ" in json_sv_ul["СвПрекрЮЛ"]:
+                        if "@attributes" in json_sv_ul["СвПрекрЮЛ"]["СпПрекрЮЛ"]:
+                            if "НаимСпПрекрЮЛ" in json_sv_ul["СвПрекрЮЛ"]["СпПрекрЮЛ"]["@attributes"]:
+                                name_for_liquidation = json_sv_ul["СвПрекрЮЛ"]["СпПрекрЮЛ"]["@attributes"][
+                                    "НаимСпПрекрЮЛ"]
+
+                if "СвОКВЭД" in json_sv_ul:
+                    if "СвОКВЭДОсн" in json_sv_ul["СвОКВЭД"]:
+                        if "@attributes" in json_sv_ul["СвОКВЭД"]["СвОКВЭДОсн"]:
+                            if "КодОКВЭД" in json_sv_ul["СвОКВЭД"]["СвОКВЭДОсн"]["@attributes"]:
+                                code_for_okved = json_sv_ul["СвОКВЭД"]["СвОКВЭДОсн"]["@attributes"]["КодОКВЭД"]
+                            if "НаимОКВЭД" in json_sv_ul["СвОКВЭД"]["СвОКВЭДОсн"]["@attributes"]:
+                                name_for_okved = json_sv_ul["СвОКВЭД"]["СвОКВЭДОсн"]["@attributes"]["НаимОКВЭД"]
+    except ValueError:
+        # just return default values
         pass
-
-    json_data = json.loads(response.text)
-    if json_data != False:
-        if "СвЮЛ" in json_data:
-            json_sv_ul = json_data["СвЮЛ"]
-            if "СвПрекрЮЛ" in json_sv_ul:
-                if "СпПрекрЮЛ" in json_sv_ul["СвПрекрЮЛ"]:
-                    if "@attributes" in json_sv_ul["СвПрекрЮЛ"]["СпПрекрЮЛ"]:
-                        if "НаимСпПрекрЮЛ" in json_sv_ul["СвПрекрЮЛ"]["СпПрекрЮЛ"]["@attributes"]:
-                            name_for_liquidation = json_sv_ul["СвПрекрЮЛ"]["СпПрекрЮЛ"]["@attributes"]["НаимСпПрекрЮЛ"]
-
-            if "СвОКВЭД" in json_sv_ul:
-                if "СвОКВЭДОсн" in json_sv_ul["СвОКВЭД"]:
-                    if "@attributes" in json_sv_ul["СвОКВЭД"]["СвОКВЭДОсн"]:
-                        if "КодОКВЭД" in json_sv_ul["СвОКВЭД"]["СвОКВЭДОсн"]["@attributes"]:
-                            code_for_okved = json_sv_ul["СвОКВЭД"]["СвОКВЭДОсн"]["@attributes"]["КодОКВЭД"]
-                        if "НаимОКВЭД" in json_sv_ul["СвОКВЭД"]["СвОКВЭДОсн"]["@attributes"]:
-                            name_for_okved = json_sv_ul["СвОКВЭД"]["СвОКВЭДОсн"]["@attributes"]["НаимОКВЭД"]
 
     return name_for_liquidation, code_for_okved, name_for_okved

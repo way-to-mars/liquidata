@@ -14,7 +14,7 @@ from tkcalendar import DateEntry
 from threading import Thread
 
 from csv_actions import *
-from excel_trying import create_excel
+from excel_export import create_excel
 from my_prediction import MyPrediction
 from strings_format import *
 from json_actions import parse_inn
@@ -36,7 +36,7 @@ class App1(customtkinter.CTk):
     # число строк в исходной базе UL_LIQUIDATION.csv
     # точное значение определим функцией searching_size_of_base()
     # False - примерное значение, True - точное
-    size_of_egrul = (False, 8500000)
+    size_of_egrul = (True, 8500000)
     input_file_name = ""
     output_csv_file = ""
 
@@ -513,19 +513,12 @@ class App1(customtkinter.CTk):
         Thread(target=self.the_big_search).start()
 
     def searching_size_of_base(self, filename):
-        with open(filename, encoding=self.INPUT_ENCODING) as r_file:
-            file_counter = csv.DictReader(r_file, delimiter=self.CHAR_DELIMITER)
-            # print(f'Старт. Читаем файл...')
-            total_lines = sum(1 for line in file_counter)
-            # total_lines = 8550000
-            # total_lines = 0
-            # for line in file_counter:
-            #     total_lines += 1
-            #     # if total_lines >900000:
-            #     #      break
-            #     if total_lines % 500000 == 0:
-            #         print(group_digits(total_lines))
-            # print(f'Найдено {group_digits(total_lines)} записей')
+        # with open(filename, encoding=self.INPUT_ENCODING) as r_file:
+        #     file_counter = csv.DictReader(r_file, delimiter=self.CHAR_DELIMITER)
+        #     # print(f'Старт. Читаем файл...')
+        #     total_lines = sum(1 for line in file_counter)
+        #
+        total_lines = 8550000
         self.size_of_egrul = (True, total_lines)
         # total_text = '{0:,}'.format(total_lines).replace(',', ' ')
         total_text = group_digits(total_lines)
