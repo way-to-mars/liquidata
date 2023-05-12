@@ -2,7 +2,10 @@ import sys
 import time
 import customtkinter
 import webbrowser
-import message_box
+
+from globals import APP_ROOT_DIR
+from view_model.mymessagebox import MyMessageBox
+from view_model.redirectoutput import RedirectOutput
 import tkinter.filedialog
 import tkinter.messagebox
 import tkinter.scrolledtext
@@ -13,11 +16,11 @@ from screeninfo import get_monitors
 from tkcalendar import DateEntry
 from threading import Thread
 
-from csv_actions import *
-from excel_export import create_excel
-from my_prediction import MyPrediction
-from strings_format import *
-from json_actions import parse_inn
+from data_processing.csv_actions import *
+from data_processing.excel_export import create_excel
+from utilities.time_prediction import TimePrediction
+from utilities.strings_format import *
+from data_processing.json_actions import parse_inn
 
 
 class App1(customtkinter.CTk):
@@ -62,7 +65,8 @@ class App1(customtkinter.CTk):
                         f'Скачать его можно нажав на кнопку "{string_w1_f1_button}."\n' \
                         f'После завершения перейдите к следующему пункту.'
     string_w1_f2_button = f'Открыть'
-    string_w1_f2_text = f'В скачанном архиве egrul.rar нас интересует только один файл (на иллюстрации слева):\n  UL_LIQUIDATION.csv\n' \
+    string_w1_f2_text = f'В скачанном архиве egrul.rar нас интересует только один файл (на иллюстрации слева):\n' \
+                        f'  UL_LIQUIDATION.csv\n' \
                         f'Его необходимо извлечь (например, в "Мои Документы")\n\n' \
                         f'Далее нажмите кнопку "{string_w1_f2_button}" и укажите этот файл.'
     string_w1_f3_awaiting = f'Ждём...'
@@ -81,7 +85,8 @@ class App1(customtkinter.CTk):
         self.set_geometry()
         self.resizable(True, True)
 
-        files_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "output_files")
+        # files_path = os.path.join(os.path.dirname(os.path.realpath(main.__file__)), "output_files")
+        files_path = os.path.join(APP_ROOT_DIR, "output_files")
         self.output_csv_file = os.path.join(files_path, "output.csv")
         self.output_xlsx_file = os.path.join(files_path, "output.xlsx")
         # Здесь будет полный путь + имя файла UL_LIQUIDATION.csv
@@ -237,7 +242,8 @@ class App1(customtkinter.CTk):
         self.gonext_button2.configure(state='disabled')
 
         self.progress_label_1 = customtkinter.CTkLabel(master=parent1, height=30,
-                                                       text="Анализируем файл базы данных...\nЗадайте фильтры, дождитесь завершения",
+                                                       text="Анализируем файл базы данных...\n"
+                                                            "Задайте фильтры, дождитесь завершения",
                                                        font=customtkinter.CTkFont(size=20, weight="normal"))
         self.progress_label_1.grid(row=2, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
         self.progressbar_1 = customtkinter.CTkProgressBar(parent1)
@@ -465,7 +471,7 @@ class App1(customtkinter.CTk):
     '''
 
     def set_2nd_frame_next_able(self):
-        if (self.size_of_egrul[0] and (self.start_date_time <= self.end_date_time)):
+        if self.size_of_egrul[0] and (self.start_date_time <= self.end_date_time):
             self.gonext_button2.configure(state='enabled', text=self.string_w1_f3_button, image=self.done_image)
             # self.gonext_button2.configure(image=self.done_image)
         else:
@@ -485,10 +491,10 @@ class App1(customtkinter.CTk):
         size_of = self.region_filter.size()
         if size_of == 0:
             # пустой фильтр - это долго и плохо
-            dialog = message_box.message_box(text=self.string_msgbox_text,
-                                             title="Это важно! Пустой список регионов для поиска",
-                                             image=self.vovka_image)
-            if dialog.get_input() != False:
+            dialog = MyMessageBox(text=self.string_msgbox_text,
+                                  title="Это важно! Пустой список регионов для поиска",
+                                  image=self.vovka_image)
+            if dialog.get_input():
                 return
             # если пользователь настойчив, будем работать с пустым фильтром
             # так или иначе в алгоритме заложен предел для результатов поиска {OUTPUT_LIMIT}
@@ -507,18 +513,14 @@ class App1(customtkinter.CTk):
         self.update()
         self.title("Шаг 3. Поиск")
         # redirect stdout
-        from strings_format import RedirectText
-        redir = RedirectText(self.console_text)
+        redir = RedirectOutput(self.console_text)
         sys.stdout = redir
         Thread(target=self.the_big_search).start()
 
     def searching_size_of_base(self, filename):
-        # with open(filename, encoding=self.INPUT_ENCODING) as r_file:
-        #     file_counter = csv.DictReader(r_file, delimiter=self.CHAR_DELIMITER)
-        #     # print(f'Старт. Читаем файл...')
-        #     total_lines = sum(1 for line in file_counter)
-        #
-        total_lines = 8550000
+        with open(filename, 'r') as fp:
+            total_lines = sum(1 for line in fp)
+        # total_lines = 8550000
         self.size_of_egrul = (True, total_lines)
         # total_text = '{0:,}'.format(total_lines).replace(',', ' ')
         total_text = group_digits(total_lines)
@@ -529,17 +531,17 @@ class App1(customtkinter.CTk):
         Thread(target=self.set_2nd_frame_next_able).start()
         #  self.set_2nd_frame_next_able
 
-    def on_date_select(event, *args):
+    def on_date_select(self, *args):
         print("Date selected, args=", args)
-        event.start_date_time = event.date_start_entry.get_date()
-        event.end_date_time = event.date_end_entry.get_date()
-        if (event.start_date_time <= event.end_date_time):
-            print(f'OK -- {event.start_date_time} {event.start_date_time <= event.end_date_time} {event.end_date_time}')
-            event.date_warning.grid_forget()
+        self.start_date_time = self.date_start_entry.get_date()
+        self.end_date_time = self.date_end_entry.get_date()
+        if self.start_date_time <= self.end_date_time:
+            print(f'OK -- {self.start_date_time} {self.start_date_time <= self.end_date_time} {self.end_date_time}')
+            self.date_warning.grid_forget()
         else:
             print('bad range!!!')
-            event.date_warning.grid(row=2, column=0, columnspan=4, padx=(10, 10), pady=10, sticky='nw')
-        event.set_2nd_frame_next_able()
+            self.date_warning.grid(row=2, column=0, columnspan=4, padx=(10, 10), pady=10, sticky='nw')
+        self.set_2nd_frame_next_able()
 
     # Клик мышкой по списку регионов переносит строку в левый лист_бокс
     def on_regions_list_click(self, event):
@@ -575,7 +577,7 @@ class App1(customtkinter.CTk):
                 total_read = 0
                 total_lines = self.size_of_egrul[1]
 
-                mp = MyPrediction(25)  # "Предсказатель" оставшегося времени выполнения по {arg} точкам
+                mp = TimePrediction(25)  # "Предсказатель" оставшегося времени выполнения по {arg} точкам
                 digit_delimiter = "'"  # разделитель групп разрядов
 
                 # Считывание данных из CSV файла
@@ -613,10 +615,6 @@ class App1(customtkinter.CTk):
                                   f'{x_name_short}\tдата прекращения: {x_date}\tпричина: {x_reason}\n'
                                   f'\t\tОКВЭД {x_okved} {x_okved_name}')
 
-                            # file_writer.writerow({'ИНН': x_inn, 'Наименование': x_name_long, 'Дата прекращения': x_date,
-                            #                       'Причина прекращения': x_reason, 'Основной ОКВЭД': x_okved,
-                            #                       'Расшифровка ОКВЭД': x_okved_name})
-
                             w_file.write(f'{x_inn}{self.CHAR_DELIMITER}'
                                          f'{x_date}{self.CHAR_DELIMITER}'
                                          f'{(int(x_inner_id), rating_regions)}{self.CHAR_DELIMITER}'
@@ -644,7 +642,8 @@ class App1(customtkinter.CTk):
                         break
 
         print(
-            f'Прочитано {total_read} {name_count_strings(total_read)}, найдено {total_write} {name_count_strings(total_write)}')
+            f'Прочитано {total_read} {name_count_strings(total_read)},'
+            f' найдено {total_write} {name_count_strings(total_write)}')
         self.basement_frame.grid_forget()
         print("Выгружаем результат в Excel...", end="")
         create_excel(self.output_csv_file, self.output_xlsx_file)

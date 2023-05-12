@@ -1,7 +1,7 @@
 """
     Задача этого класса рассчитывать время до завершения процесса
 
-    апроксимация по {dimension = 2..10} точкам
+    апроксимация по {dimension = 2..100} точкам
 
     точки в виде кортежей (время, процент выполнения)
         время = time.time()
@@ -10,7 +10,7 @@
 
 import time
 
-class MyPrediction:
+class TimePrediction:
     sequence = []
     MAX_DIMENSION = 100
 

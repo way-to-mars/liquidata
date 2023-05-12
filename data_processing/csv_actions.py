@@ -3,7 +3,10 @@ import datetime
 import os
 import tkinter
 
-SUB_DIR_REGIONS_CODE_CSV = "data_files"
+from globals import APP_ROOT_DIR
+
+# SUB_DIR_REGIONS_CODE_CSV = "../data_files"
+DATA_FILES_PATH = os.path.join(APP_ROOT_DIR, "data_files")
 
 NEEDED_COLUMNS = ['INN', 'NAMEP', 'NAMES', 'OKATO', 'KPP', 'STATUS_LIQUIDATION_INNER_ID', 'DATAPREKRUL', 'REGION_NAME']
 
@@ -55,6 +58,9 @@ def triple_check_region(region_name, regions_list, kpp="", okato=""):
         return True, 0
 
     upper_name = str.upper(region_name)
+    # check if somehow this dictionary (map) is empty
+    if not regions_dictionary:
+        load_regions_data()
     rating = 0
     for region in regions_list:
         dict_rec = regions_dictionary[region]
@@ -108,8 +114,8 @@ def check_headers(filename_input, code_table, char_delimiter):
 def load_regions_data():
     regions_file_name = ""
     try:
-        files_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), SUB_DIR_REGIONS_CODE_CSV)
-        regions_file_name = os.path.join(files_path, "region_code.csv")
+        # files_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), SUB_DIR_REGIONS_CODE_CSV)
+        regions_file_name = os.path.join(DATA_FILES_PATH, "region_code.csv")
 
         with open(regions_file_name, encoding="WINDOWS-1251") as r_file:
             if r_file is None:
@@ -220,8 +226,7 @@ def export_default_regions():
     }
     regions_file_name = ""
     try:
-        files_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), SUB_DIR_REGIONS_CODE_CSV)
-        regions_file_name = os.path.join(files_path, "region_code.txt")
+        regions_file_name = os.path.join(DATA_FILES_PATH, "region_code.txt")
 
         with open(regions_file_name, mode="w", encoding="WINDOWS-1251") as w_file:
             for i in regions_dictionary_internal:
@@ -241,10 +246,3 @@ def fill_listbox_with_regions(listbox: tkinter.Listbox):
     regions_list = tkinter.Variable()
     regions_list.set(list_items)
     listbox.configure(listvariable=regions_list)
-
-
-if __name__ == "__main__":
-    load_regions_data()
-    export_default_regions()
-    print(triple_check_region(regions_list=['Красноярский край', 'Алтайский край'], kpp='246601001', okato='044010000',
-                              region_name="Кр. красНоярСкий"))

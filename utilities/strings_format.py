@@ -1,4 +1,3 @@
-import tkinter
 
 """
 example_minutes_one_digit = {
@@ -11,7 +10,7 @@ example_minutes_one_digit = {
     'минут',  # 6
     'минут',  # 7
     'минут',  # 8
-    'минут'  # 0
+    'минут'  # 9
 }
 example_minutes_teen_digits = {
     'минут',  # 10
@@ -25,6 +24,8 @@ example_minutes_teen_digits = {
     'минут'  # 19
 }  ### определяем правильный падеж к заданному числу
 """
+
+
 def name_of_count(input_x, like_5_minut, like_1_minuta, like_2_minutiy):
     x = abs(input_x)
 
@@ -41,17 +42,22 @@ def name_of_count(input_x, like_5_minut, like_1_minuta, like_2_minutiy):
         return like_1_minuta
     return like_2_minutiy
 
+
 def name_count_hours(x):
     return name_of_count(input_x=x, like_5_minut="часов", like_2_minutiy="часа", like_1_minuta="час")
+
 
 def name_count_minutes(x):
     return name_of_count(input_x=x, like_5_minut="минут", like_2_minutiy="минуты", like_1_minuta="минута")
 
+
 def name_count_seconds(x):
     return name_of_count(input_x=x, like_5_minut="секунд", like_2_minutiy="секунды", like_1_minuta="секунда")
 
+
 def name_count_strings(x):
     return name_of_count(input_x=x, like_5_minut="строк", like_2_minutiy="строки", like_1_minuta="строка")
+
 
 """
     list1 - список строк в ВЕРХНЕМ регистре
@@ -59,6 +65,8 @@ def name_count_strings(x):
 
     Добавляем в {list1} неповторные слова из строки {string_list}, приводя их в КАПС-вид
 """
+
+
 def combine_lists(list1, string_list):
     list1.clear()
     list2 = string_list.split()
@@ -82,18 +90,5 @@ def seconds_to_timestr(sec):
         return f'{minutes: .0f} {name_count_minutes(minutes)}, {seconds: .0f} {name_count_seconds(seconds)}'
     else:
         hours, minutes = divmod(minutes, 60)
-        return f'{hours: .0f} {name_count_hours(hours)} {minutes: .0f} {name_count_minutes(minutes)}, {seconds: .0f} {name_count_seconds(seconds)}'
-
-
-class RedirectText(object):
-    def __init__(self, text_ctrl):
-        """Constructor"""
-        self.output = text_ctrl
-
-    def write(self, string):
-        """"""
-        self.output.insert(tkinter.END, string)
-        self.output.see("end")
-
-    def flush(self):
-        pass
+        return f'{hours: .0f} {name_count_hours(hours)} {minutes: .0f} {name_count_minutes(minutes)},' \
+               f' {seconds: .0f} {name_count_seconds(seconds)}'

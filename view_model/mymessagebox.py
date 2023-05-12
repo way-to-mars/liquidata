@@ -4,17 +4,11 @@ from customtkinter import CTkToplevel, CTkLabel, CTkButton, CTkFrame, CTkImage
 from typing import Union
 
 
-class message_box(CTkToplevel):
-    """
-    Dialog with extra window, message, entry widget, cancel and ok button.
-    For detailed information check out the documentation.
-    """
-
+class MyMessageBox(CTkToplevel):
     def __init__(self,
-                 title: str = "CTk Всплывающее сообщение",
-                 text: str = "CTk Продолжить?",
-                 image: CTkImage = None):
-
+                 title: str,
+                 text: str,
+                 image: CTkImage):
         super().__init__()
 
         self._user_input: Union[bool, None] = None
@@ -26,18 +20,18 @@ class message_box(CTkToplevel):
         self.lift()  # lift window on top
         self.attributes("-topmost", True)  # stay on top
         self.protocol("WM_DELETE_WINDOW", self._on_closing)
-        self.after(10, self._create_widgets)  # create widgets with slight delay, to avoid white flickering of background
+        self.after(10,
+                   self._create_widgets)  # create widgets with slight delay, to avoid white flickering of background
         self.resizable(False, False)
         self.grab_set()  # make other windows not clickable
 
     def _create_widgets(self):
-
-        self.grid_columnconfigure((0, 1), weight=1)
+        self.grid_columnconfigure(1, weight=1)
         self.rowconfigure(0, weight=1)
 
         self._top_frame = CTkFrame(master=self,
-                               width=400,
-                               fg_color="transparent"
+                                   width=400,
+                                   fg_color="transparent"
                                    )
         self._top_frame.grid(row=0, column=0, columnspan=2, padx=20, pady=20, sticky="ew")
 
@@ -54,10 +48,10 @@ class message_box(CTkToplevel):
         #                        width=230)
         # self._entry.grid(row=1, column=0, columnspan=2, padx=20, pady=(0, 20), sticky="ew")
 
-        if self._image != None:
+        if self._image is not None:
             picture = CTkLabel(master=self._top_frame,
-                                 image=self._image,
-                                 text="")
+                               image=self._image,
+                               text="")
             picture.grid(row=0, column=0, padx=10, pady=10, sticky="ns")
 
         self._ok_button = CTkButton(master=self,
