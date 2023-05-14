@@ -1,7 +1,7 @@
 """
     Задача этого класса рассчитывать время до завершения процесса
 
-    апроксимация по {dimension = 2..100} точкам
+    линейная аппроксимация по {dimension = 2..100} точкам
 
     точки в виде кортежей (время, процент выполнения)
         время = time.time()
@@ -9,6 +9,7 @@
 """
 
 import time
+
 
 class TimePrediction:
     sequence = []
@@ -19,7 +20,7 @@ class TimePrediction:
             level = self.MAX_DIMENSION
         elif level < 2:
             level = 2
-        self.dimension = level      # количество точек для апроксимации
+        self.dimension = level  # количество точек для аппроксимации
         self.create_time = time.time()  # время создания объекта класса (для упрощения расчетов)
 
     def add_point(self, time_now, percentage):
@@ -27,7 +28,7 @@ class TimePrediction:
             del self.sequence[0]
         # на входе получаем системное время, но сохраняем только интервал времени от {self.create_time}
         # для упрощения вычислений
-        self.sequence.append((time_now-self.create_time, percentage))
+        self.sequence.append((time_now - self.create_time, percentage))
 
     def seek_time(self):
         sumx = 0
@@ -51,5 +52,3 @@ class TimePrediction:
         estimated_time = finish_time - self.sequence[-1][0]
 
         return estimated_time
-
-

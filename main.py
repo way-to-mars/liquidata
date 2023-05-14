@@ -1,4 +1,4 @@
-from view_model.first_window import App1
+from view_model.main_window import App1
 
 
 if __name__ == '__main__':

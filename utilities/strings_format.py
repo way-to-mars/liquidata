@@ -26,44 +26,44 @@ example_minutes_teen_digits = {
 """
 
 
-def name_of_count(input_x, like_5_minut, like_1_minuta, like_2_minutiy):
+def name_of_count(input_x, like_5_minutes, like_a_minute, like_2_minutes):
     x = abs(input_x)
 
     # смотрим на первые две (младшие) цифры числа, с 5 по 20 написание одинаковое
     first_2_digits = x % 100
     if 5 <= first_2_digits <= 20:
-        return like_5_minut
+        return like_5_minutes
 
-    # в остальных случая падеж записит только от первой (младшей) цифры числа
+    # в остальных случая падеж зависит только от первой (младшей) цифры числа
     first_1_digit = first_2_digits % 10
     if first_1_digit == 0 or first_1_digit >= 5:
-        return like_5_minut
+        return like_5_minutes
     if first_1_digit == 1:
-        return like_1_minuta
-    return like_2_minutiy
+        return like_a_minute
+    return like_2_minutes
 
 
 def name_count_hours(x):
-    return name_of_count(input_x=x, like_5_minut="часов", like_2_minutiy="часа", like_1_minuta="час")
+    return name_of_count(input_x=x, like_5_minutes="часов", like_2_minutes="часа", like_a_minute="час")
 
 
 def name_count_minutes(x):
-    return name_of_count(input_x=x, like_5_minut="минут", like_2_minutiy="минуты", like_1_minuta="минута")
+    return name_of_count(input_x=x, like_5_minutes="минут", like_2_minutes="минуты", like_a_minute="минута")
 
 
 def name_count_seconds(x):
-    return name_of_count(input_x=x, like_5_minut="секунд", like_2_minutiy="секунды", like_1_minuta="секунда")
+    return name_of_count(input_x=x, like_5_minutes="секунд", like_2_minutes="секунды", like_a_minute="секунда")
 
 
 def name_count_strings(x):
-    return name_of_count(input_x=x, like_5_minut="строк", like_2_minutiy="строки", like_1_minuta="строка")
+    return name_of_count(input_x=x, like_5_minutes="строк", like_2_minutes="строки", like_a_minute="строка")
 
 
 """
     list1 - список строк в ВЕРХНЕМ регистре
     string_list - строка из слов, разделенных пробелами
 
-    Добавляем в {list1} неповторные слова из строки {string_list}, приводя их в КАПС-вид
+    Добавляем в {list1} неповторяющиеся слова из строки {string_list}, приводя их в КАПС-вид
 """
 
 
@@ -83,7 +83,7 @@ def group_digits(number_string, char_delimiter=' '):
     return result
 
 
-def seconds_to_timestr(sec):
+def seconds_to_time_string(sec):
     minutes, seconds = divmod(sec, 60)
 
     if minutes < 60:

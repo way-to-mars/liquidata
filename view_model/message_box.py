@@ -8,7 +8,7 @@ class MyMessageBox(CTkToplevel):
     def __init__(self,
                  title: str,
                  text: str,
-                 image: CTkImage):
+                 image: CTkImage = None):
         super().__init__()
 
         self._user_input: Union[bool, None] = None
@@ -27,6 +27,7 @@ class MyMessageBox(CTkToplevel):
 
     def _create_widgets(self):
         self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
 
         self._top_frame = CTkFrame(master=self,
@@ -57,7 +58,7 @@ class MyMessageBox(CTkToplevel):
         self._ok_button = CTkButton(master=self,
                                     width=100,
                                     border_width=0,
-                                    text='Ок',
+                                    text='Исправить',
                                     command=self._ok_event,
                                     font=customtkinter.CTkFont(size=20))
         self._ok_button.grid(row=1, column=0, columnspan=1, padx=(20, 10), pady=(0, 20), sticky="ew")
@@ -90,3 +91,16 @@ class MyMessageBox(CTkToplevel):
     def get_input(self):
         self.master.wait_window(self)
         return self._user_input
+
+
+if __name__ == "__main__":
+    from globals import APP_IMAGES_DIR
+    from view_model.image_resourses import load_images
+
+    images = load_images(APP_IMAGES_DIR)
+
+    dialog = MyMessageBox(text="A long long sentence to describe something special and important",
+                          title="Это важно! Пустой список регионов для поиска",
+                          image=images['vovka'])
+    if dialog.get_input():
+        pass
