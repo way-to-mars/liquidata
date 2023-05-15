@@ -95,7 +95,7 @@ regions_dictionary = {}
 
 
 # Проверяем, что дата "прекращения" существует и её значение от {date_min} до {date_max}
-def check_date(date_in, date_min, date_max):
+def check_date(date_in, date_min, date_max) -> bool:
     if len(date_in) == 0:
         return False
     date = datetime.datetime.strptime(date_in, '%d.%m.%Y').date()
@@ -162,13 +162,6 @@ def triple_check_region(region_name, regions_list, kpp="", okato=""):
             return True, rating
 
     return False, -3
-
-
-# проверяем, что {name} содержит в себе {necessary_part} == 'ОБЩЕСТВО'
-def is_ooo(name, necessary_part):
-    if necessary_part in name:
-        return True
-    return False
 
 
 # проверяем наличие нужных csv-заголовков
