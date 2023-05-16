@@ -152,7 +152,6 @@ class App1(customtkinter.CTk):
         sys.stdout = console_context
         Thread(target=data_processing.big_search.big_search,
                kwargs={
-                    "parent_frame": self.third_frame,
                     "start_date": self.second_frame.start_date,
                     "end_date": self.second_frame.end_date,
                     "regions_to_use": self.regions_to_use,
@@ -162,8 +161,24 @@ class App1(customtkinter.CTk):
                     "output_xlsx_file": self.output_xlsx_file,
                     "char_delimiter": self.CHAR_DELIMITER,
                     "total_lines": int(self.size_of_egrul[1]),
+                    "func_callback_progress": self.callback_progress,
+                    "func_callback_on_finish": self.callback_on_finish,
                }
                ).start()
+
+    def callback_progress(self, percentage, predicted_time, total_write):
+        self.third_frame.search_progressbar.set(percentage)
+        self.third_frame.elapsed_time_text.configure(
+            text=f'{seconds_to_time_string(predicted_time)}')
+        self.third_frame.search_founded.delete(0, tkinter.END)
+        self.third_frame.search_founded.insert(0, f"Найдено: {total_write}")
+
+
+    def callback_on_finish(self):
+        self.third_frame.basement_frame.grid_forget()
+        self.third_frame.search_text.configure(
+            text=f'Программа завершила свою работу. В открывшемся окне Excel можно насладиться результатами )))')
+
 
     def get_base_size(self, filename):
         with open(filename, 'r') as fp:

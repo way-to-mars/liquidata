@@ -1,17 +1,15 @@
-import tkinter.scrolledtext
 import time
 
 import globals
 from data_processing.csv_actions import *
 from data_processing.excel_export import create_excel
+from data_processing.csv_reader import CsvReader
 from utilities.time_prediction import TimePrediction
 from utilities.strings_format import *
 from data_processing.json_actions import parse_inn
-from view_model import Frame3
 
 
 def big_search(
-        parent_frame: Frame3,
         start_date,
         end_date,
         regions_to_use,
@@ -21,6 +19,8 @@ def big_search(
         output_xlsx_file,
         char_delimiter,
         total_lines,
+        func_callback_progress,
+        func_callback_on_finish,
 ):
     STATUS_LIQUIDATION_ID = {
         51: "ЛИКВИДАЦИЯ ЮРИДИЧЕСКОГО ЛИЦА #301",
@@ -61,6 +61,14 @@ def big_search(
             # write headers
             w_file.write(f"{char_delimiter.join(fieldnames)}\n")
 
+            head_line = r_file.readline()
+
+            csvreader = CsvReader(head_line)
+
+            new_line = r_file.readline()
+
+            csvreader.read_line(new_line)
+
             file_reader = csv.DictReader(r_file, delimiter=char_delimiter)
 
             total_write = 0
@@ -77,10 +85,10 @@ def big_search(
                 # раз в --- шагов обновляем индикатор прогресса
                 if (total_read % 10000) == 9999:
                     percentage = total_read / total_lines
-                    parent_frame.search_progressbar.set(percentage)
                     mp.add_point(time.time(), percentage)
-                    parent_frame.elapsed_time_text.configure(
-                        text=f'{seconds_to_time_string(mp.seek_time())}')
+                    # invoke callback function on UI
+                    func_callback_progress(percentage, mp.seek_time(), total_write)
+
                 # ограничим количество строк для записи значением {limit_output}
                 if total_write >= 65_535:
                     print(f'Достигнут предел количества искомых строк')
@@ -100,7 +108,6 @@ def big_search(
                 except (TypeError, ValueError):
                     print(x_inner_id_str)
                     continue
-                    pass
 
                 if x_inner_id not in status_liquidations_ids:
                     continue
@@ -129,11 +136,11 @@ def big_search(
                 x_reason = STATUS_LIQUIDATION_ID[x_inner_id]
                 x_okved = x_okved_list[0]
                 total_write += 1
-                parent_frame.search_founded.delete(0, tkinter.END)
-                parent_frame.search_founded.insert(0, f"Найдено: {total_write}")
                 percentage = total_read / total_lines
-                parent_frame.search_progressbar.set(percentage)
                 mp.add_point(time.time(), percentage)
+                # invoke callback function on UI
+                func_callback_progress(percentage, mp.seek_time(), total_write)
+
                 print(f'[{percentage:.1%}] {group_digits(total_write, digit_delimiter)}: ИНН {x_inn}\t'
                       f'{x_name_short}\tдата прекращения: {x_date}\tпричина: {x_reason}\n'
                       f'\t\tОКВЭД {x_okved} {x_okved_name}')
@@ -146,12 +153,9 @@ def big_search(
                              f'{x_okved}{char_delimiter}'
                              f'{x_okved_name}\n')
 
-    print(
-        f'Прочитано {total_read} {name_count_strings(total_read)},'
-        f' найдено {total_write} {name_count_strings(total_write)}')
-    parent_frame.basement_frame.grid_forget()
+    print(f'Прочитано {total_read} {name_count_strings(total_read)},'
+          f' найдено {total_write} {name_count_strings(total_write)}')
     print("Выгружаем результат в Excel...", end="")
     create_excel(output_csv_file, output_xlsx_file)
     print("- готово.")
-    parent_frame.search_text.configure(
-        text=f'Программа завершила свою работу. В открывшемся окне Excel можно насладиться результатами )))')
+    func_callback_on_finish()
