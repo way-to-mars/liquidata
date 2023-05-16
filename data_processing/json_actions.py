@@ -39,12 +39,12 @@ def get_okved_list(json_data):
     okved = get_or_default(json_data, ["СвЮЛ", "СвОКВЭД", "СвОКВЭДОсн", "@attributes", "КодОКВЭД"], None)
 
     if okved is None:  # there must be the main okved
-        return result
+        return None
     result.append(okved)
 
     okved_list = get_or_default(json_data, ["СвЮЛ", "СвОКВЭД", "СвОКВЭДДоп"], None)
     if okved_list is None:
-        return result
+        return None
 
     for json_block in okved_list:
         okved = get_or_default(json_block, ["@attributes", "КодОКВЭД"], None)
