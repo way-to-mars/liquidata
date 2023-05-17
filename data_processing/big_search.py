@@ -53,8 +53,9 @@ def big_search(
             w_file.write(f"{char_delimiter.join(fieldnames)}\n")
 
             head_line = r_file.readline()
-            csv_reader = CsvReader(head_line)
-            # file_reader = csv.DictReader(r_file, delimiter=char_delimiter)
+            csv_reader = CsvReader.from_str(head_line)
+            if csv_reader is None:
+                func_callback_on_finish(False)
 
             total_write = 0
             total_read = 0
@@ -145,4 +146,4 @@ def big_search(
     print("Выгружаем результат в Excel...", end="")
     create_excel(output_csv_file, output_xlsx_file)
     print("- готово.")
-    func_callback_on_finish()
+    func_callback_on_finish(True)

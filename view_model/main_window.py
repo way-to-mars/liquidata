@@ -174,10 +174,14 @@ class App1(customtkinter.CTk):
         self.third_frame.search_founded.insert(0, f"Найдено: {total_write}")
 
 
-    def callback_on_finish(self):
+    def callback_on_finish(self, is_correct: bool):
         self.third_frame.basement_frame.grid_forget()
-        self.third_frame.search_text.configure(
-            text=f'Программа завершила свою работу. В открывшемся окне Excel можно насладиться результатами )))')
+        if is_correct:
+            self.third_frame.search_text.configure(
+                text=f'Программа завершила свою работу. В открывшемся окне Excel можно насладиться результатами )))')
+        else:
+            self.third_frame.search_text.configure(
+                text=f'Программа завершила работу с ошибкой')
 
 
     def get_base_size(self, filename):

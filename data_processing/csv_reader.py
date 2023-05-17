@@ -1,31 +1,66 @@
 class CsvReader:
     CHAR_DELIMITER = "\t"
 
-    def __init__(self, head_string: str):
-        keys = head_string.split(self.CHAR_DELIMITER)
+    def __init__(self,
+                 index_inn: int,
+                 index_kpp: int,
+                 index_name_full: int,
+                 index_name_short: int,
+                 index_status_id: int,
+                 index_date_closed: int,
+                 index_okato: int,
+                 index_region_name: int,
+                 key_list_size: int,
+                 ):
+        self.__inn = index_inn
+        self.__kpp = index_kpp
+        self.__name_full = index_name_full
+        self.__name_short = index_name_short
+        self.__status_id = index_status_id
+        self.__date_closed = index_date_closed
+        self.__okato = index_okato
+        self.__region_name = index_region_name
 
-        try:
-            self.__inn = keys.index("INN")
-            self.__kpp = keys.index("KPP")
-            self.__name_full = keys.index("NAMEP")
-            self.__name_short = keys.index("NAMES")
-            self.__status_id = keys.index("STATUS_LIQUIDATION_INNER_ID")
-            self.__date_closed = keys.index("DATAPREKRUL")
-            self.__okato = keys.index("OKATO")
-            self.__region_name = keys.index("REGION_NAME")
-        except ValueError:
-            raise ValueError(f'Missing some necessary keys in {head_string}')
-
-        self.__size = len(keys)
+        self.__size = key_list_size
         self.__start_indexes: list[int] = [0] * self.__size
         self.__end_indexes: list[int] = [0] * self.__size
-        self.__str_ptr: str = head_string
+        self.__str_ptr: str = ''
 
+    # this is a fabric method to create an object from csv-string containing headers
+    @staticmethod
+    def from_str(line: str):
+        keys = line.split(CsvReader.CHAR_DELIMITER)
+        try:
+            _inn = keys.index("INN")
+            _kpp = keys.index("KPP")
+            _name_full = keys.index("NAMEP")
+            _name_short = keys.index("NAMES")
+            _status_id = keys.index("STATUS_LIQUIDATION_INNER_ID")
+            _date_closed = keys.index("DATAPREKRUL")
+            _okato = keys.index("OKATO")
+            _region_name = keys.index("REGION_NAME")
+        except ValueError:
+            return None
+
+        return CsvReader(
+            index_inn=_inn,
+            index_kpp=_kpp,
+            index_okato=_okato,
+            index_name_full=_name_full,
+            index_name_short=_name_short,
+            index_region_name=_region_name,
+            index_status_id=_status_id,
+            index_date_closed=_date_closed,
+            key_list_size=len(keys),
+        )
+
+    # returns True only if {line} has exactly {self.__size} substrings
     def read_line(self, line: str) -> bool:
         self.__str_ptr = line
         founded = 0
         index_start = 0
         index = 0
+
         for c in line:
             if c == self.CHAR_DELIMITER:
                 self.__start_indexes[founded] = index_start
@@ -86,10 +121,10 @@ if __name__ == "__main__":
     str1 = "INN\tOGRN\tKPP\tNAMEP\tNAMES\tSTATUS_LIQUIDATION_INNER_ID\tDTSTART\tDATAPREKRUL\tOKATO\t" \
            "INDEKS\tREGION_NAME\tRAION_NAME\tGOROD_NAME\tNASPUNKT_NAME\tSTREET_NAME\tDOM\tKORP\tKVART"
 
-    reader = CsvReader(str1)
+    reader = CsvReader.from_str(str1)
     reader.read_line(str1)
     inn = reader.inn()
     kpp = reader.kpp()
     idd = reader.status_id()
 
-    pass
+
