@@ -51,8 +51,8 @@ class OkvedFilters:
             try:
                 json_data = json.loads(json_file.read())
             except JSONDecodeError:
-                print("Wrong okved_filter.json format!")
-                return None
+                print("Wrong okved_filter.json format! Loading default values")
+                return OkvedFilters.from_default()
         _filter_id = 0
         _filters: list[OkvedFilters.OkvedFilter] = []
         for each_filter in json_data:
@@ -61,11 +61,50 @@ class OkvedFilters:
                 filters_list = each_filter['list']
             except JSONDecodeError:
                 print("Wrong okved_filter.json format!")
-                return None
+                return OkvedFilters.from_default()
             new_filter = OkvedFilters.OkvedFilter(_filter_id, name, filters_list)
             _filter_id += 1
             _filters.append(new_filter)
         return OkvedFilters(_filters)
+
+    @staticmethod
+    def from_default():
+        default_list = [
+            {
+                "name": "Строительство",
+                "list": ["41.", "42.", "43."]
+            },
+
+            {
+                "name": "Стройматериалы",
+                "list": ["41.13", "46.13.2"]
+            },
+
+            {
+                "name": "Оптовая торговля продукты",
+                "list": ["46.17.", "46.3", "46.31.", "46.32.", "46.33.", "46.36.", "46.37", "46.38.", "46.39."]
+            },
+
+            {
+                "name": "Оптовая торговля прочее",
+                "list": ["46.15.", "46.41.", "46.42.", "46.43.", "46.47.", "46.9", "46.90"]
+            }
+        ]
+        _filters: list[OkvedFilters.OkvedFilter] = []
+        _filter_id = 0
+        for item in default_list:
+            name = item['name']
+            filters_list = item['list']
+            new_filter = OkvedFilters.OkvedFilter(_filter_id, name, filters_list)
+            _filter_id += 1
+            _filters.append(new_filter)
+        return OkvedFilters(_filters)
+
+    def get_filter_description(self, filter_id, only_main: bool) -> str:
+        if only_main:
+            return f'Фильтр ОКВЭД "{self.filters[filter_id].name}"' \
+                   f' * точное совпадение со списком: {self.filters[filter_id].exact_values}' \
+                   f' * коды по маске: {self.filters[filter_id].mask_values}'
 
     # Returns a filter-function
     def get_filter_func(self, filter_id, only_main: bool):

@@ -1,5 +1,13 @@
 import sys
+from io import StringIO
+
 import customtkinter
+import tkinter.filedialog
+import tkinter.messagebox
+import tkinter.scrolledtext
+
+from screeninfo import get_monitors
+from threading import Thread
 
 import data_processing.big_search
 import globals
@@ -8,16 +16,10 @@ from view_model.Frame1 import Frame1
 from view_model.Frame2 import Frame2
 from view_model.Frame3 import Frame3
 from view_model.image_resourses import load_images
-from view_model.redirectoutput import RedirectOutput
-import tkinter.filedialog
-import tkinter.messagebox
-import tkinter.scrolledtext
-
-from screeninfo import get_monitors
-from threading import Thread
-
+from utilities.redirectoutput import RedirectOutput
 from data_processing.csv_actions import *
 from utilities.strings_format import *
+
 
 '''
  Все окна реализованы в виде набора виджетов, которые привязаны к своему корневому CTkFrame
@@ -44,6 +46,11 @@ class App1(customtkinter.CTk):
 
     def __init__(self):
         super().__init__()
+
+        # redirect console output  to a string buffer self.stdout
+        # self.old_sys_stdout = sys.stdout
+        self.my_stdout = StringIO()
+        sys.stdout = self.my_stdout
 
         self.title("Шаг 1. База данных")
         self.set_geometry()
@@ -147,9 +154,26 @@ class App1(customtkinter.CTk):
         self.third_layout.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
         self.update()
         self.title("Шаг 3. Поиск")
+
+        # fetch okved filters
+        is_main = True if self.second_frame.checkbox_is_main.get() == 1 else False
+        choice = self.second_frame.filters_combobox.get()
+        filter_id = self.second_frame.filters.get_list().index(choice)
+        func_okved_filter = self.second_frame.filters.get_filter_func(filter_id, is_main)
+        print(self.second_frame.filters.get_filter_description(filter_id, is_main))
+
         # redirect stdout
         console_context = RedirectOutput(self.third_frame.console_text)
         sys.stdout = console_context
+
+        # print out all data from self.stdout buffer
+        aaa = self.my_stdout
+        bbb = aaa.getvalue()
+        ccc = aaa.read()
+
+        for line in self.my_stdout.readlines():
+            print(line)
+
         Thread(target=data_processing.big_search.big_search,
                kwargs={
                     "start_date": self.second_frame.start_date,
@@ -163,6 +187,7 @@ class App1(customtkinter.CTk):
                     "total_lines": int(self.size_of_egrul[1]),
                     "func_callback_progress": self.callback_progress,
                     "func_callback_on_finish": self.callback_on_finish,
+                    "func_okved_filter": func_okved_filter,
                }
                ).start()
 
@@ -173,7 +198,6 @@ class App1(customtkinter.CTk):
         self.third_frame.search_founded.delete(0, tkinter.END)
         self.third_frame.search_founded.insert(0, f"Найдено: {total_write}")
 
-
     def callback_on_finish(self, is_correct: bool):
         self.third_frame.basement_frame.grid_forget()
         if is_correct:
@@ -182,7 +206,6 @@ class App1(customtkinter.CTk):
         else:
             self.third_frame.search_text.configure(
                 text=f'Программа завершила работу с ошибкой')
-
 
     def get_base_size(self, filename):
         with open(filename, 'r') as fp:

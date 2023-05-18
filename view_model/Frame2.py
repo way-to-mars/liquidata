@@ -1,4 +1,9 @@
+import os
+
 import customtkinter
+
+from data_processing.okved_filter import OkvedFilters
+from globals import APP_DATA_DIR
 from view_model.message_box import MyMessageBox
 import tkinter.filedialog
 import tkinter.messagebox
@@ -16,6 +21,7 @@ class Frame2:
     str1_date = 'Диапазон дат для поиска'
     str2_description = 'Регионы для поиска << выберите из списка справа'
     str3_description = 'Фильтр ОКВЭД'
+    str3_use_main = 'Искать только по основному ОКВЭД'
     str_button_waiting = f'Ждём...'
     str_button_go_next = f'Продолжить'
     string_message_box = 'Крайне желательно выбрать нужные вам регионы.' \
@@ -39,8 +45,8 @@ class Frame2:
         # set grid layout 3x1
         parent_frame.grid_columnconfigure(0, weight=0)
         parent_frame.grid_columnconfigure(1, weight=1)
-        parent_frame.grid_rowconfigure(0, weight=1)
-        parent_frame.grid_rowconfigure(1, weight=0)
+        parent_frame.grid_rowconfigure(0, weight=0)
+        parent_frame.grid_rowconfigure(1, weight=1)
         parent_frame.grid_rowconfigure(2, weight=0)
         parent_frame.grid_rowconfigure(3, weight=0)
 
@@ -64,14 +70,14 @@ class Frame2:
         self.region_filter_frame.grid_columnconfigure(3, weight=0)
         self.region_filter_frame.grid_rowconfigure(1, weight=1)
 
-        self.forbidnames_frame = customtkinter.CTkFrame(parent_frame, corner_radius=10)
-        self.forbidnames_frame.grid(row=1, column=0,
-                                    # columnspan=2,
-                                    sticky="nsew", pady=(20, 0), padx=20, ipady=10,
-                                    ipadx=10)
-        self.forbidnames_frame.grid_columnconfigure(0, weight=1)
-        self.forbidnames_frame.grid_rowconfigure(0, weight=0)
-        # self.forbidnames_frame.grid_rowconfigure(1, weight=1)
+        self.filter_frame = customtkinter.CTkFrame(parent_frame, corner_radius=10)
+        self.filter_frame.grid(row=1, column=0,
+                               # columnspan=2,
+                               sticky="nsew", pady=(20, 0), padx=20, ipady=10,
+                               ipadx=10)
+        self.filter_frame.grid_columnconfigure(0, weight=1)
+        self.filter_frame.grid_rowconfigure(0, weight=0)
+        # self.filter_frame.grid_rowconfigure(1, weight=1)
 
         self.gonext_button2 = customtkinter.CTkButton(parent_frame, text=self.str_button_waiting,
                                                       image=images['awaiting'],
@@ -180,16 +186,22 @@ class Frame2:
         self.regions_list.bind('<<ListboxSelect>>', self.on_regions_list_click)
 
         ''' 
-        Filter for names
+        Filter for okved codes
         '''
-        customtkinter.CTkLabel(master=self.forbidnames_frame, text=self.str3_description,
+        self.filters = OkvedFilters.from_json_file(os.path.join(APP_DATA_DIR, "okved_filter.json"))
+        filters_list = self.filters.get_list()
+        customtkinter.CTkLabel(master=self.filter_frame, text=self.str3_description,
                                font=customtkinter.CTkFont(size=20, weight="normal")).grid(
             row=0, column=0, padx=(10, 10), pady=10, sticky='w')
-        self.names_filter = customtkinter.CTkTextbox(self.forbidnames_frame, text_color='grey',
-                                                     font=customtkinter.CTkFont(size=18, weight="normal"))
-        self.names_filter.grid(row=1, column=0, sticky="nswe", padx=10, pady=(0, 10))
-        # self.names_filter.insert("0.0", self.forbidden_grocery_names)
-        self.names_filter.configure(state="disabled")
+        self.checkbox_is_main = customtkinter.CTkCheckBox(self.filter_frame, text=self.str3_use_main)
+        self.checkbox_is_main.grid(row=1, column=0, sticky="nswe", padx=10, pady=(0, 10))
+        self.filters_combobox = customtkinter.CTkComboBox(
+            master=self.filter_frame,
+            values=filters_list,
+        )
+        self.filters_combobox.grid(row=2, column=0, sticky="nswe", padx=10, pady=(0, 10))
+        self.filters_combobox.set(filters_list[0])
+
 
     def on_date_select(self, *args):
         print("Date selected, args=", args)
@@ -255,4 +267,5 @@ class Frame2:
         else:
             for i in range(size_of):
                 self.regions_to_use.append(str.upper(self.region_filter.get(i)))  # сравнивать будем в верхнем регистре
+
         self.func_start_next_window()

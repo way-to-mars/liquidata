@@ -4,7 +4,6 @@ import globals
 from data_processing.csv_actions import *
 from data_processing.excel_export import create_excel
 from data_processing.csv_reader import CsvReader
-from data_processing.okved_filter import OkvedFilters
 from utilities.time_prediction import TimePrediction
 from utilities.strings_format import *
 from data_processing.json_actions import parse_inn
@@ -22,6 +21,7 @@ def big_search(
         total_lines,
         func_callback_progress,
         func_callback_on_finish,
+        func_okved_filter,
 ):
     status_liquidation_id_dict = {
         51: "ЛИКВИДАЦИЯ ЮРИДИЧЕСКОГО ЛИЦА #301",
@@ -55,8 +55,7 @@ def big_search(
 
             head_line = r_file.readline()
             csv_reader = CsvReader.from_str(head_line)
-            okved_filters = OkvedFilters.from_json_file(os.path.join(APP_DATA_DIR, "okved_filter.json"))
-            if csv_reader is None or okved_filters is None:
+            if csv_reader is None:
                 func_callback_on_finish(False)
 
             total_write = 0
@@ -65,8 +64,6 @@ def big_search(
             mp = TimePrediction(25)  # "Предсказатель" оставшегося времени выполнения по {arg} точкам
             digit_delimiter = "'"  # разделитель групп разрядов
             status_liquidations_ids = list(status_liquidation_id_dict.keys())
-
-            filter_func = okved_filters.get_filter_func(2, False)
 
             for line in r_file:
                 total_read += 1
@@ -122,7 +119,7 @@ def big_search(
                     continue
 
                 # comparing okved codes
-                if not filter_func(line_okved_list):
+                if not func_okved_filter(line_okved_list):
                     continue
 
                 # the following sections works only if every check-up is passed
