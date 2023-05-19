@@ -17,13 +17,15 @@ def prepare_environment():
     create_path_if_not_exists(APP_DATA_DIR)
     create_path_if_not_exists(APP_IMAGES_DIR)
 
-    print(f'"prepare_environment" function is invoked:\n'
-          f' ✔ APP_ROOT_DIR → {APP_ROOT_DIR}\n'
-          f' ✔ APP_OUTPUT_DIR → {APP_OUTPUT_DIR}\n'
-          f' ✔ APP_DATA_DIR → {APP_DATA_DIR}\n'
-          f' ✔ APP_IMAGES_DIR → {APP_IMAGES_DIR}\n'
+    print(
+          f'✔ APP_ROOT_DIR → {APP_ROOT_DIR}\n'
+          f'✔ APP_OUTPUT_DIR → {APP_OUTPUT_DIR}\n'
+          f'✔ APP_DATA_DIR → {APP_DATA_DIR}\n'
+          f'✔ APP_IMAGES_DIR → {APP_IMAGES_DIR}\n'
           )
 
 
 # Call this function in any way
 prepare_environment()
+
+

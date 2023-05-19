@@ -204,14 +204,11 @@ class Frame2:
 
 
     def on_date_select(self, *args):
-        print("Date selected, args=", args)
         self.start_date = self.date_start_entry.get_date()
         self.end_date = self.date_end_entry.get_date()
         if self.start_date <= self.end_date:
-            print(f'OK -- {self.start_date} {self.start_date <= self.end_date} {self.end_date}')
             self.date_warning.grid_forget()
         else:
-            print('bad date range!!!')
             self.date_warning.grid(row=2, column=0, columnspan=4, padx=(10, 10), pady=10, sticky='nw')
         self.set_2nd_frame_next_able()
 

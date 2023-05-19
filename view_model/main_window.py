@@ -1,5 +1,4 @@
 import sys
-from io import StringIO
 
 import customtkinter
 import tkinter.filedialog
@@ -16,7 +15,7 @@ from view_model.Frame1 import Frame1
 from view_model.Frame2 import Frame2
 from view_model.Frame3 import Frame3
 from view_model.image_resourses import load_images
-from utilities.redirectoutput import RedirectOutput
+from utilities.redirectoutput import RedirectOutputCTk
 from data_processing.csv_actions import *
 from utilities.strings_format import *
 
@@ -46,11 +45,6 @@ class App1(customtkinter.CTk):
 
     def __init__(self):
         super().__init__()
-
-        # redirect console output  to a string buffer self.stdout
-        # self.old_sys_stdout = sys.stdout
-        self.my_stdout = StringIO()
-        sys.stdout = self.my_stdout
 
         self.title("Шаг 1. База данных")
         self.set_geometry()
@@ -160,19 +154,17 @@ class App1(customtkinter.CTk):
         choice = self.second_frame.filters_combobox.get()
         filter_id = self.second_frame.filters.get_list().index(choice)
         func_okved_filter = self.second_frame.filters.get_filter_func(filter_id, is_main)
-        print(self.second_frame.filters.get_filter_description(filter_id, is_main))
 
+        # extract buffer
+        stdout_buffer = sys.stdout.buffer
         # redirect stdout
-        console_context = RedirectOutput(self.third_frame.console_text)
+        console_context = RedirectOutputCTk(self.third_frame.console_text)
         sys.stdout = console_context
-
-        # print out all data from self.stdout buffer
-        aaa = self.my_stdout
-        bbb = aaa.getvalue()
-        ccc = aaa.read()
-
-        for line in self.my_stdout.readlines():
+        # print out all data from buffer
+        for line in stdout_buffer:
             print(line)
+
+        print(self.second_frame.filters.get_filter_description(filter_id, is_main))
 
         Thread(target=data_processing.big_search.big_search,
                kwargs={

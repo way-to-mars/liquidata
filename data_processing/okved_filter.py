@@ -102,8 +102,12 @@ class OkvedFilters:
 
     def get_filter_description(self, filter_id, only_main: bool) -> str:
         if only_main:
-            return f'Фильтр ОКВЭД "{self.filters[filter_id].name}"' \
-                   f' * точное совпадение со списком: {self.filters[filter_id].exact_values}' \
+            return f'Фильтр "{self.filters[filter_id].name}" по основному коду ОКВЭД\n' \
+                   f' * точное совпадение со списком: {self.filters[filter_id].exact_values}\n' \
+                   f' * коды по маске: {self.filters[filter_id].mask_values}'
+        else:
+            return f'Фильтр "{self.filters[filter_id].name}" по всем кодам ОКВЭД\n' \
+                   f' * точное совпадение со списком: {self.filters[filter_id].exact_values}\n' \
                    f' * коды по маске: {self.filters[filter_id].mask_values}'
 
     # Returns a filter-function
