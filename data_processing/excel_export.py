@@ -41,17 +41,17 @@ def create_excel(input_csv_filename, output_xlsx_filename):
             sheet_1.cell(row=1, column=i).fill = fill_1
             i += 1
         # применяем автофильтр ко всем столбцам (например от A:G)
-        sheet_1.auto_filter.ref = f'A:{"ABCDEFGHIJKLMNOPQRSTUVWXYZ"[i - 2] if i < 27 else "Z"}'
+        # sheet_1.auto_filter.ref = f'A:{"ABCDEFGHIJKLMNOPQRSTUVWXYZ"[i - 2] if i < 27 else "Z"}'
         sheet_1.column_dimensions["A"].width = 12
-        sheet_1.column_dimensions["B"].width = 21
-        sheet_1.column_dimensions["C"].width = 8
-        sheet_1.column_dimensions["D"].width = 60
+        sheet_1.column_dimensions["B"].width = 19
+        sheet_1.column_dimensions["C"].width = 24
+        sheet_1.column_dimensions["D"].width = 50
         sheet_1.column_dimensions["E"].width = 60
-        sheet_1.column_dimensions["F"].width = 19
-        sheet_1.column_dimensions["G"].width = 75
+        sheet_1.column_dimensions["F"].width = 80
+        # sheet_1.column_dimensions["G"].width = 75
 
         # Читаем данные из cvs и пишем их в лист {sheet_1}
-        row_counter = 2
+        row_counter = 3
         a_values = []  # : List - список всех значений в строке csv
 
         my_style_1 = NamedStyle(name="colored_data_style")
@@ -73,7 +73,17 @@ def create_excel(input_csv_filename, output_xlsx_filename):
             a_values.clear()
             row_counter += 1
 
+        sheet_1.auto_filter.ref = f'A2:F{row_counter-1}'
+
         # Save {book} to file
         book.save(final_xlsx_name)
         book.close()
         os.system("START EXCEL " + final_xlsx_name)
+
+
+
+if __name__ == "__main__":
+    from globals import APP_OUTPUT_DIR
+    input_file = os.path.join(APP_OUTPUT_DIR, "output.csv")
+    output_file = rename_if_exists(os.path.join(APP_OUTPUT_DIR, "output.xlsx"))
+    create_excel(input_file, output_file)

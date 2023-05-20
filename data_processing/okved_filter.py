@@ -17,10 +17,10 @@ class OkvedFilters:
             pass
 
         def apply_filter_to_first_element(self, okveds: list[str]) -> bool:
-            print(f"Invoked filter ({self.id}) {self.name}:")
-            print(f"\texact values = {self.exact_values}")
-            print(f"\tmask values = {self.mask_values}")
-            print(f"\tinput {type(okveds)} = {okveds}")
+            # print(f"Invoked filter ({self.id}) {self.name}:")
+            # print(f"\texact values = {self.exact_values}")
+            # print(f"\tmask values = {self.mask_values}")
+            # print(f"\tinput {type(okveds)} = {okveds}")
             okved = okveds[0]
             if okved in self.exact_values:
                 return True
@@ -30,10 +30,10 @@ class OkvedFilters:
             return False
 
         def apply_filter_to_list(self, okveds: list[str]) -> bool:
-            print(f"Invoked filter ({self.id}) {self.name}:")
-            print(f"\texact values = {self.exact_values}")
-            print(f"\tmask values = {self.mask_values}")
-            print(f"\tinput {type(okveds)} = {okveds}")
+            # print(f"Invoked filter ({self.id}) {self.name}:")
+            # print(f"\texact values = {self.exact_values}")
+            # print(f"\tmask values = {self.mask_values}")
+            # print(f"\tinput {type(okveds)} = {okveds}")
             for okved in okveds:
                 if okved in self.exact_values:
                     return True
@@ -57,13 +57,13 @@ class OkvedFilters:
         _filters: list[OkvedFilters.OkvedFilter] = []
         for each_filter in json_data:
             try:
+                _filter_id += 1
                 name = each_filter['name']
                 filters_list = each_filter['list']
             except JSONDecodeError:
                 print("Wrong okved_filter.json format!")
                 return OkvedFilters.from_default()
             new_filter = OkvedFilters.OkvedFilter(_filter_id, name, filters_list)
-            _filter_id += 1
             _filters.append(new_filter)
         return OkvedFilters(_filters)
 
@@ -93,20 +93,20 @@ class OkvedFilters:
         _filters: list[OkvedFilters.OkvedFilter] = []
         _filter_id = 0
         for item in default_list:
+            _filter_id += 1
             name = item['name']
             filters_list = item['list']
             new_filter = OkvedFilters.OkvedFilter(_filter_id, name, filters_list)
-            _filter_id += 1
             _filters.append(new_filter)
         return OkvedFilters(_filters)
 
     def get_filter_description(self, filter_id, only_main: bool) -> str:
         if only_main:
-            return f'Фильтр "{self.filters[filter_id].name}" по основному коду ОКВЭД\n' \
+            return f'Фильтр "{self.filters[filter_id].name}", поиск по основному коду ОКВЭД\n' \
                    f' * точное совпадение со списком: {self.filters[filter_id].exact_values}\n' \
                    f' * коды по маске: {self.filters[filter_id].mask_values}'
         else:
-            return f'Фильтр "{self.filters[filter_id].name}" по всем кодам ОКВЭД\n' \
+            return f'Фильтр "{self.filters[filter_id].name}", поиск по всем кодам ОКВЭД\n' \
                    f' * точное совпадение со списком: {self.filters[filter_id].exact_values}\n' \
                    f' * коды по маске: {self.filters[filter_id].mask_values}'
 

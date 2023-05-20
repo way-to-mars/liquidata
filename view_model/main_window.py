@@ -162,7 +162,7 @@ class App1(customtkinter.CTk):
         sys.stdout = console_context
         # print out all data from buffer
         for line in stdout_buffer:
-            print(line)
+            print(line, end="")
 
         print(self.second_frame.filters.get_filter_description(filter_id, is_main))
 

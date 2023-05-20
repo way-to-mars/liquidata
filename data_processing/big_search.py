@@ -48,14 +48,15 @@ def big_search(
 
     with open(input_file_name, encoding=input_encoding) as r_file:
         with open(output_csv_file, mode="w", encoding='WINDOWS-1251') as w_file:
-            fieldnames = ['ИНН', 'Дата прекращения', 'Код', 'Причина прекращения', 'Наименование',
-                          'Основной ОКВЭД', 'Расшифровка ОКВЭД']
+            fieldnames = ['ИНН', 'Дата прекращения', 'Причина прекращения', 'Наименование',
+                          'Основной ОКВЭД', 'Дополнительные ОКВЭД']
             # write headers
             w_file.write(f"{char_delimiter.join(fieldnames)}\n")
 
             head_line = r_file.readline()
             csv_reader = CsvReader.from_str(head_line)
             if csv_reader is None:
+                print(f"Ошибка чтения заголовков: {head_line}")
                 func_callback_on_finish(False)
 
             total_write = 0
@@ -116,11 +117,15 @@ def big_search(
                 # fetching a list of okved codes: ["Основной Оквэд", "Доп1", "Доп2", ...]
                 line_okved_list, line_main_okved_name = parse_inn(line_inn)
                 if line_okved_list is None:
+                    print(" [-] Пустой список ОКВЭД")
                     continue
 
                 # comparing okved codes
                 if not func_okved_filter(line_okved_list):
+                    print(" [x] ОКВЭДы не соответствуют")
                     continue
+
+                print("")
 
                 # the following sections works only if every check-up is passed
                 line_name_short = csv_reader.name_short()
@@ -135,9 +140,9 @@ def big_search(
                 # invoke callback function on UI
                 func_callback_progress(percentage, mp.seek_time(), total_write)
 
-                print(f'[{percentage:.1%}] {group_digits(total_write, digit_delimiter)}: ИНН {line_inn}\t'
-                      f'{line_name_short}\tдата прекращения: {line_date}\tпричина: {line_reason}\n'
-                      f'\t\tОКВЭД {line_main_okved} {line_main_okved_name}')
+                print(f'ИНН {line_inn} '
+                      f'{line_name_short} {line_date}: {line_reason} '
+                      f'Осн.ОКВЭД {line_main_okved} {line_main_okved_name}')
 
                 w_file.write(f'{line_inn}{char_delimiter}'
                              f'{line_date}{char_delimiter}'
@@ -146,7 +151,7 @@ def big_search(
                              f'{line_main_okved} - {line_main_okved_name}{char_delimiter}'
                              f'{" ".join(line_okved_list[1:])}\n')  # put all the elements except 1st to a string
 
-    print(f'Прочитано {total_read} {name_count_strings(total_read)},'
+    print(f'Всего {total_read} {name_count_strings(total_read)},'
           f' найдено {total_write} {name_count_strings(total_write)}')
     print("Выгружаем результат в Excel...", end="")
     create_excel(output_csv_file, output_xlsx_file)
